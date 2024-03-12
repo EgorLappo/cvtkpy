@@ -26,7 +26,7 @@ setuptools.setup(
         'matplotlib',
         'statsmodels',
         'scikit-allel',
-        'sklearn'
+        'scikit-learn'
     ],
     python_requires='>=3.6',
 )
