@@ -45,7 +45,6 @@ def weighted_mean(array, weights, axis=0):
     return np.ma.average(array_masked, axis=axis, weights=weights).data
 
 
-
 def block_bootstrap_ratio_averages(blocks_numerator, blocks_denominator,
                                    block_indices, B, estimator=np.divide,
                                    statistic=None,
@@ -70,7 +69,7 @@ def block_bootstrap_ratio_averages(blocks_numerator, blocks_denominator,
     else:
         B_range = range(int(B))
 
-    assert(len(blocks_numerator) == len(blocks_denominator))
+    assert (len(blocks_numerator) == len(blocks_denominator))
     blocks = np.arange(len(blocks_numerator), dtype='uint32')
 
     # Calculate the weights
@@ -82,13 +81,15 @@ def block_bootstrap_ratio_averages(blocks_numerator, blocks_denominator,
 
     for b in B_range:
         bidx = np.random.choice(blocks, size=nblocks, replace=True)
-        exp_numerator = weighted_mean(blocks_numerator[bidx, ...], weights=weights[bidx])
-        exp_denominator = weighted_mean(blocks_denominator[bidx, ...], weights=weights[bidx])
+        exp_numerator = weighted_mean(
+            blocks_numerator[bidx, ...], weights=weights[bidx])
+        exp_denominator = weighted_mean(
+            blocks_denominator[bidx, ...], weights=weights[bidx])
         stat = estimator(exp_numerator, exp_denominator, **kwargs)
         straps.append(stat)
     straps = np.stack(straps)
     if That is None:
-        That = np.mean(straps, axis=0)
+        That = np.nanmean(straps, axis=0)
     if return_straps:
         return straps, weights
     return bootstrap_ci(That, straps, alpha=alpha, method=ci_method)
@@ -101,10 +102,11 @@ def cov_estimator(cov, het_denom, R, T, average_replicates=False, warn=False):
     if not average_replicates:
         return cov
     else:
-        return np.mean(stack_temporal_covariances(cov, R, T), axis=2)
+        return np.nanmean(stack_temporal_covariances(cov, R, T), axis=2)
 
 
-flatten = lambda l: [item for sublist in l for item in sublist]
+def flatten(l): return [item for sublist in l for item in sublist]
+
 
 def block_bootstrap(freqs, depths, diploids,
                     block_indices, block_seqids, B, estimator,
@@ -124,7 +126,8 @@ def block_bootstrap(freqs, depths, diploids,
         blocks = np.array([i for i, seqid in enumerate(block_seqids)
                            if seqid in keep_seqids], dtype='uint32')
     else:
-        blocks = np.array([i for i, seqid in enumerate(block_seqids)], dtype='uint32')
+        blocks = np.array(
+            [i for i, seqid in enumerate(block_seqids)], dtype='uint32')
 
     # number of samples in resample
     nblocks = len(blocks)
@@ -139,11 +142,7 @@ def block_bootstrap(freqs, depths, diploids,
     straps = np.stack(straps)
     if return_straps:
         return straps
-    That= statistic
+    That = statistic
     if That is None:
         That = np.mean(straps, axis=0)
     return bootstrap_ci(That, straps, alpha=alpha, method=ci_method)
-
-
-
-
